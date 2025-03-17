@@ -3,6 +3,7 @@
 import mysql.connector
 import traceback
 import MySQLdb as mdb
+from PyQt5.QtWidgets import QMessageBox
 
 class Database:
     _instance = None 
@@ -20,8 +21,8 @@ class Database:
             self.db = mdb.connect(
                 host="localhost",
                 user="root",
-                password="*Tsamil11",
-                database="movienest"
+                password="Mysql_sifrem1",
+                database="movieNest_481"
             )
             self.cursor = self.db.cursor()
             print("✅ Veritabanı bağlantısı başarılı.")
@@ -106,3 +107,80 @@ class Database:
         if self.db:
             self.db.close()
             print("✅ Veritabanı bağlantısı kapatıldı.")
+
+
+    """ 
+    Verilen user_id parametresine göre kullanıcıya ait izleme listesini döner.
+    İzleme listesi boşsa "Empty Watchlist" stringi döner..
+    """
+    def get_watchlist(self, user_id):
+        try:
+            query = """
+            SELECT m.id, m.title, vote_average, poster_path, genre_ids
+            FROM user_movie_list l 
+            JOIN movies m ON l.movie_id = m.id 
+            WHERE l.user_id = %s
+            """
+            self.cursor.execute(query, (user_id,))
+            result = self.cursor.fetchall() 
+
+            if not result:
+                return "Empty Watchlist"
+        
+            return result
+        
+        except Exception as e:
+            return f"Hata oluştu: {e}"
+        
+        
+    """
+    Verilen user_id için kullanıcının izleme listesine movie_id bilgisine sahip filmi ekler.
+    Ekleme işlemi başarılıysa 1 döner.
+    Film zaten ekliyse uyarı verir, 0 döner.
+    """
+    def add_movie(self, user_id, movie_id):
+        try:
+           watchlist = self.get_watchlist(user_id)
+           for movie in watchlist:
+               if(movie[0] == movie_id):
+                    error_message = "Seçili film zaten listenizde ekli!"
+                    QMessageBox.critical(None, "Uyarı", error_message)
+                    return 0
+
+           query = """
+           INSERT INTO user_movie_list (user_id, movie_id)
+           VALUES (%s, %s);
+           """
+           self.cursor.execute(query, (user_id, movie_id))
+           self.db.commit()  
+           return 1  
+        
+        except Exception as e:
+            return f"Hata oluştu: {e}"
+        
+        
+    """
+    Verilen user_id bilgisine sahip kullanıcının izleme listesinden movie_id bilgisine sahip filmi siler.
+    İşlem başarılı ise 1 döner.
+    """
+    def remove_movie(self, user_id, movie_id):
+        try:
+            query = """
+            DELETE FROM user_movie_list l
+            WHERE l.user_id = %s 
+            AND l.movie_id = %s;
+            """
+            self.cursor.execute(query, (user_id, movie_id))
+            self.db.commit() 
+            return 1
+        
+        except Exception as e:
+            return f"Hata oluştu: {e}"
+
+
+
+
+
+
+
+
