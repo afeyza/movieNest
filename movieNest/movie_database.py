@@ -43,18 +43,17 @@ class Database:
             traceback.print_exc()
             return "Hata oluştu"
         
-    def get_movie(self, movie_id):
-        """ ID'ye göre filmi getir """
+    def get_random_movies(self, limit=100):
+        """ Fetch 100 random movies from the database """
         try:
-            query = "SELECT * FROM Movies WHERE id = %s"
-            self.cursor.execute(query, (movie_id,))
-            result = self.cursor.fetchone()
-            return result if result else "Film bulunamadı."
-
+            query = f"SELECT * FROM movies ORDER BY RAND() LIMIT %s"
+            self.cursor.execute(query, (limit,))
+            result = self.cursor.fetchall()
+            return result
         except mysql.connector.Error as err:
-            print(f"⚠️ Veritabanı hatası: {err}")
+            print(f"⚠️ Database error: {err}")
             traceback.print_exc()
-            return "Hata oluştu"
+            return None
         
     def get_user(self, user_id):
         """ ID'ye göre user getir """
