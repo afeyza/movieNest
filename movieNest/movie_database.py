@@ -111,7 +111,7 @@ class Database:
 
     """ 
     Verilen user_id parametresine göre kullanıcıya ait izleme listesini döner.
-    İzleme listesi boşsa "Empty Watchlist" stringi döner..
+    İzleme listesi boşsa "Empty Watchlist" stringi döner.
     """
     def get_watchlist(self, user_id):
         try:
@@ -130,7 +130,9 @@ class Database:
             return result
         
         except Exception as e:
-            return f"Hata oluştu: {e}"
+            error_message = f"Hata oluştu: {e}"
+            QMessageBox.critical(None, "Hata", error_message)
+            
         
         
     """
@@ -156,7 +158,9 @@ class Database:
            return 1  
         
         except Exception as e:
-            return f"Hata oluştu: {e}"
+            error_message = f"Hata oluştu: {e}"
+            QMessageBox.critical(None, "Hata", error_message)
+            return 0
         
         
     """
@@ -175,7 +179,69 @@ class Database:
             return 1
         
         except Exception as e:
-            return f"Hata oluştu: {e}"
+            error_message = f"Hata oluştu: {e}"
+            QMessageBox.critical(None, "Hata", error_message)
+            return 0
+        
+ 
+## search_and_filter(genre[], rating[])  return [][]: Makes a filtering operation on the movie list based on the genre and rating filtering options. Returns the filtered movie list.
+	
+## search(title) return [][]: Searches the given title in the movie list and returns the results.
+    """
+    Seçilen türlere ve oylama(puan) aralıklarına göre filtreleme yapar.
+    Verilen aralıklardan ve türlerden herhangi birine sahip olan filmler getirilir.
+    Filtre uygulanmamış alanlar tüm tür veya aralık değerleri üzerinden incelenir.
+    Filtre yapılmadıysa tüm filmleri getirmek için filter([], []) şeklinde kullanılabilir.
+    Sonuç liste halinde dönülür.
+    """
+    def filter(self, genres, vote_ranges):
+        try:
+            if(genres != [] and vote_ranges != []):
+                vote_conditions = " OR ".join(["(vote_average BETWEEN %s AND %s)"] * len(vote_ranges))
+                genre_conditions = " OR ".join(["(genre_ids = %s)"] * len(genres))
+                query = f"""
+                SELECT * 
+                FROM movies 
+                WHERE ({vote_conditions})
+                AND ({genre_conditions})
+                """    
+                vote_params = [value for r in vote_ranges for value in r] 
+                genre_params = [value for value in genres] 
+                self.cursor.execute(query, (tuple(vote_params) + tuple(genre_params)))
+
+            elif(genres != []):
+                genre_conditions = " OR ".join(["(genre_ids = %s)"] * len(genres))
+                query = f"""    
+                SELECT * 
+                FROM movies 
+                WHERE {genre_conditions}
+                """
+                genre_params = [value for value in genres] 
+                self.cursor.execute(query, tuple(genre_params))
+
+            elif(vote_ranges != []):
+                vote_conditions = " OR ".join(["(vote_average BETWEEN %s AND %s)"] * len(vote_ranges))
+                query = f"""    
+                SELECT * 
+                FROM movies 
+                WHERE {vote_conditions}
+                """
+                vote_params = [value for r in vote_ranges for value in r] 
+                self.cursor.execute(query, tuple(vote_params))
+
+            else:
+                query = f"""    
+                SELECT * 
+                FROM movies 
+                """
+                self.cursor.execute(query)
+
+            return self.cursor.fetchall()
+        
+        except Exception as e:
+            error_message = f"Hata oluştu: {e}"
+            QMessageBox.critical(None, "Hata", error_message)
+            return "Hata"
 
 
 
