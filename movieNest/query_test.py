@@ -2,5 +2,5 @@
 from movie_database import Database
 
 db = Database()
-movie = db.register_user("ahmet","7575")
-print(movie)
+movies = db.register_user("ayşe","7")
+print(movies)
