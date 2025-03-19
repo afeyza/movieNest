@@ -263,6 +263,19 @@ class Database:
             return "❌ Geçersiz sıralama türü!"
 
         return sorted_movies
+    
+    def get_poster(self, movie_id):
+        """ ID'ye göre film posterini getir """
+        try:
+            query = "SELECT poster_path FROM Movies WHERE id = %s"
+            self.cursor.execute(query, (movie_id,))
+            result = self.cursor.fetchone()
+            return result[0] if result else "Poster bulunamadı."
+
+        except mysql.connector.Error as err:
+            print(f"⚠️ Veritabanı hatası: {err}")
+            traceback.print_exc()
+            return "Hata oluştu"
 
 
 
