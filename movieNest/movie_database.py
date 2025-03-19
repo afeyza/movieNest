@@ -251,6 +251,20 @@ class Database:
             error_message = f"Hata oluştu: {e}"
             QMessageBox.critical(None, "Hata", error_message)
             return "Hata"
+        
+    def sort(self, sort_type, order, movies):
+        """ Filmleri belirtilen türde ve sırada sıralar """
+        reverse = order == "dsc"  # For descending order reverse=True
+        if sort_type == "rating":
+            sorted_movies = sorted(movies, key=lambda x: x[2], reverse=reverse)  # Rating order
+        elif sort_type == "alphabetic":
+            sorted_movies = sorted(movies, key=lambda x: x[1].lower(), reverse=reverse)  # Alphabetical order
+        else:
+            return "❌ Geçersiz sıralama türü!"
+
+        return sorted_movies
+
+
 
 
 
