@@ -32,8 +32,10 @@ class UiMainWindow(object):
     def on_clicked(self):
         """ Butona basınca film bilgisini getir """
         try:
-            movie_name = self.db.get_movie_title(5)
-            self.label.setText(movie_name)
+            movie_name = self.db.search_and_filter("four rooms",[],[])
+            for l in movie_name:
+                print(str(l))
+            
         except Exception as err:
             error_message = f"Hata oluştu:\n{str(err)}"
             print(error_message)

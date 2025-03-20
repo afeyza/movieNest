@@ -4,6 +4,7 @@ import mysql.connector
 import traceback
 import MySQLdb as mdb
 from PyQt5.QtWidgets import QMessageBox
+import re
 
 class Database:
     _instance = None 
@@ -130,8 +131,8 @@ class Database:
             return result
         
         except Exception as e:
-            error_message = f"Hata oluştu: {e}"
-            QMessageBox.critical(None, "Hata", error_message)
+            error_message = f"Error occured: {e}"
+            QMessageBox.critical(None, "Error", error_message)
             
         
         
@@ -145,21 +146,21 @@ class Database:
            watchlist = self.get_watchlist(user_id)
            for movie in watchlist:
                if(movie[0] == movie_id):
-                    error_message = "Seçili film zaten listenizde ekli!"
-                    QMessageBox.critical(None, "Uyarı", error_message)
+                    error_message = "This movie has already been added to your watchlist!"
+                    QMessageBox.critical(None, "Warning", error_message)
                     return 0
 
            query = """
            INSERT INTO user_movie_list (user_id, movie_id)
            VALUES (%s, %s);
            """
-           self.cursor.execute(query, (user_id, movie_id))
+           self.cursor.execute(query, (user_id, movie_id,))
            self.db.commit()  
            return 1  
         
         except Exception as e:
-            error_message = f"Hata oluştu: {e}"
-            QMessageBox.critical(None, "Hata", error_message)
+            error_message = f"Error occured: {e}"
+            QMessageBox.critical(None, "Error", error_message)
             return 0
         
         
@@ -174,20 +175,19 @@ class Database:
             WHERE l.user_id = %s 
             AND l.movie_id = %s;
             """
-            self.cursor.execute(query, (user_id, movie_id))
+            self.cursor.execute(query, (user_id, movie_id,))
             self.db.commit() 
             return 1
         
         except Exception as e:
-            error_message = f"Hata oluştu: {e}"
-            QMessageBox.critical(None, "Hata", error_message)
+            error_message = f"Error occured: {e}"
+            QMessageBox.critical(None, "Error", error_message)
             return 0
         
- 
-## search_and_filter(genre[], rating[])  return [][]: Makes a filtering operation on the movie list based on the genre and rating filtering options. Returns the filtered movie list.
 	
-## search(title) return [][]: Searches the given title in the movie list and returns the results.
     """
+    genres: seçilen tür filtreleri
+    vote_ranges: seçilen oy aralıkları
     Seçilen türlere ve oylama(puan) aralıklarına göre filtreleme yapar.
     Verilen aralıklardan ve türlerden herhangi birine sahip olan filmler getirilir.
     Filtre uygulanmamış alanlar tüm tür veya aralık değerleri üzerinden incelenir.
@@ -230,7 +230,7 @@ class Database:
                 self.cursor.execute(query, tuple(vote_params))
 
             else:
-                query = f"""    
+                query = """    
                 SELECT * 
                 FROM movies 
                 """
@@ -239,14 +239,81 @@ class Database:
             return self.cursor.fetchall()
         
         except Exception as e:
-            error_message = f"Hata oluştu: {e}"
-            QMessageBox.critical(None, "Hata", error_message)
-            return "Hata"
+            error_message = f"Error occured: {e}"
+            QMessageBox.critical(None, "Error", error_message)
+            return "Error"
 
+    """
+    title: aranan kelime/kelimeler
+    "İçereni bul" şeklinde çalışır.
+    Kelimeyi başlığında içeren tüm filmleri saklar.
+    Kelimenin başka bir kelimeye dahil olmadığı başlıkları filtrelemek için ilgili fonksiyonu çağırır.
+    """
+    def search(self, title):    
+        try:
+             # Kelimenin başlık içinde geçtiği tüm filmleri al
+            query = """
+            SELECT * 
+            FROM movies
+            WHERE LOWER(title) LIKE LOWER(%s)
+            """
+            self.cursor.execute(query, (f"%{title}%",))
+            movies = self.cursor.fetchall()
+            
+            filtered_movies = self.control_for_special_chars(title.lower(), movies)
+            
+            return filtered_movies
+                   
+        except Exception as e:
+            error_message = f"Error occured: {e}"
+            QMessageBox.critical(None, "Error", error_message)
+            return "Error"
+    """
+    searching_title: aranan kelime/kelimeler
+    movies: kelimenin geçtiği film listesi
+    "İçereni bul" aramasına göre tutulan film başlıklarını inceler.
+    Başlıktaki özel karakterleri boşluğa çevirir.
+    Aranan kelime başka bir kelimenin içinde geçiyorsa o filmi saklamaz.
+    Tek başına kelimeyi bulunduran filmler tutulur.
+    Elde edilen film listesi dönülür. 
+    """
+    def control_for_special_chars(self, searching_title, movies):
+        # Kelimenin tam olarak geçmesi durumunda eklendiği liste ("Eve gitti." cümlesi üzerinde "Ev" ile arama yapılırsa film eklenmez.)
+        movie_list = []
+ 
+        for movie in movies:
+            title = self.replace_special_characters(movie[1].lower())
+            
+            if(title.startswith(searching_title+" ")):
+                movie_list.append(movie)
+            elif(title.endswith(" "+searching_title)):
+                movie_list.append(movie)
+            elif(title.find(" "+searching_title+" ") != -1):
+                movie_list.append(movie)
+            elif(title == searching_title):
+                movie_list.append(movie)
 
+        return movie_list
+    """
+    input_string: özel karakterleri boşluğa çevrilecek string
+    Tüm özel karakterler boşluk karakteri ile değiştirilir.
+    """
+    def replace_special_characters(self, input_string):
+        # Tüm özel karakterleri boşluk (' ') ile değiştiriyoruz
+        return re.sub(r'\W', ' ', input_string)
+    
+    """
+    title: seçili kelime filtresi
+    genres: seçili tür filtreleri
+    vote_ranges: seçili oy aralıkları
+    Verilen filtrelere uygun film listesini döner.
+    """
+    def search_and_filter(self, title, genres, vote_ranges):
+        # Tür ve oya göre filtrelenmiş liste
+        movies = self.filter(genres, vote_ranges)
+        if(movies == "Error"):
+            return "Something went wrong"
 
-
-
-
-
+        filtered_movies = self.control_for_special_chars(title, movies)
+        return filtered_movies
 
