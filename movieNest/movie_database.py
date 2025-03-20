@@ -22,8 +22,8 @@ class Database:
             self.db = mdb.connect(
                 host="localhost",
                 user="root",
-                password="*Tsamil11",
-                database="movienest"
+                password="Mysql_sifrem1",
+                database="movieNest_481"
             )
             self.cursor = self.db.cursor()
             print("✅ Veritabanı bağlantısı başarılı.")
@@ -325,4 +325,28 @@ class Database:
 
         filtered_movies = self.control_for_special_chars(title, movies)
         return filtered_movies
+    def sort(self, sort_type, order, movies):
+        """ Filmleri belirtilen türde ve sırada sıralar """
+        reverse = order == "dsc"  # For descending order reverse=True
+        if sort_type == "rating":
+            sorted_movies = sorted(movies, key=lambda x: x[2], reverse=reverse)  # Rating order
+        elif sort_type == "alphabetic":
+            sorted_movies = sorted(movies, key=lambda x: x[1].lower(), reverse=reverse)  # Alphabetical order
+        else:
+            return "❌ Geçersiz sıralama türü!"
+
+        return sorted_movies
+    
+    def get_poster(self, movie_id):
+        """ ID'ye göre film posterini getir """
+        try:
+            query = "SELECT poster_path FROM Movies WHERE id = %s"
+            self.cursor.execute(query, (movie_id,))
+            result = self.cursor.fetchone()
+            return result[0] if result else "Poster bulunamadı."
+
+        except mysql.connector.Error as err:
+            print(f"⚠️ Veritabanı hatası: {err}")
+            traceback.print_exc()
+            return "Hata oluştu"
 
