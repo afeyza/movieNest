@@ -2,5 +2,7 @@
 from movie_database import Database
 
 db = Database()
-movie = db.register_user("ahmet","7575")
-print(movie)
+movies = db.get_random_movies(3)
+print(movies)
+print("---------")
+print(db.sort("alphabetic", "dsc", movies))

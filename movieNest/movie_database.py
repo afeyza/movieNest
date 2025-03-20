@@ -22,8 +22,8 @@ class Database:
             self.db = mdb.connect(
                 host="localhost",
                 user="root",
-                password="Mysql_sifrem1",
-                database="movieNest_481"
+                password="*Tsamil11",
+                database="movienest"
             )
             self.cursor = self.db.cursor()
             print("✅ Veritabanı bağlantısı başarılı.")
@@ -44,18 +44,17 @@ class Database:
             traceback.print_exc()
             return "Hata oluştu"
         
-    def get_movie(self, movie_id):
-        """ ID'ye göre filmi getir """
+    def get_random_movies(self, limit=100):
+        """ Fetch 100 random movies from the database """
         try:
-            query = "SELECT * FROM Movies WHERE id = %s"
-            self.cursor.execute(query, (movie_id,))
-            result = self.cursor.fetchone()
-            return result if result else "Film bulunamadı."
-
+            query = f"SELECT * FROM movies ORDER BY RAND() LIMIT %s"
+            self.cursor.execute(query, (limit,))
+            result = self.cursor.fetchall()
+            return result
         except mysql.connector.Error as err:
-            print(f"⚠️ Veritabanı hatası: {err}")
+            print(f"⚠️ Database error: {err}")
             traceback.print_exc()
-            return "Hata oluştu"
+            return None
         
     def get_user(self, user_id):
         """ ID'ye göre user getir """
@@ -71,10 +70,19 @@ class Database:
             return "Hata oluştu"
         
     def register_user(self, username, password):
-        """ Kullanıcıyı veritabanına ekler ve başarılı olup olmadığını kontrol eder """
+        """ Kullanıcıyı veritabanına eklerken, kullanıcı adının önceden alınmış olup olmadığını kontrol eder """
         try:
+            # Kullanıcı adı daha önce kullanılmış mı kontrol et
+            check_query = "SELECT COUNT(*) FROM Users WHERE nickname = %s"
+            self.cursor.execute(check_query, (username,))
+            user_exists = self.cursor.fetchone()[0] > 0
+
+            if user_exists:
+                return "❌ Bu kullanıcı adı zaten alınmış, lütfen başka bir tane deneyin."
+
+            # Kullanıcı adı kullanılabilir, kaydı yap
             query = "INSERT INTO Users (nickname, password) VALUES (%s, %s);"
-            self.cursor.execute(query, (username, password,))
+            self.cursor.execute(query, (username, password))
             self.db.commit()
 
             if self.cursor.rowcount > 0:
@@ -86,8 +94,9 @@ class Database:
             print(f"⚠️ Veritabanı hatası: {err}")
             traceback.print_exc()
             return "Hata oluştu"
+
         
-    def authenticate_user(self, username, password):
+    def login_user(self, username, password):
         """ Kullanıcı adı ve şifreyi kontrol eden fonksiyon """
         try:
             query = "SELECT * FROM Users WHERE nickname = %s AND password = %s;"
