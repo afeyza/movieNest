@@ -388,7 +388,7 @@ class Database:
                 """
                 self.cursor.execute(query)
                 overall_popular_movies = self.cursor.fetchall()
-                return ["Top rated movies", overall_popular_movies]
+                return ["Popular movies", overall_popular_movies]
 
             # Get genre_ids from watched movies
             movie_ids = [movie[0] for movie in watched_movies]
