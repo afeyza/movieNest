@@ -23,18 +23,47 @@ class MainWindow(QtWidgets.QMainWindow):
         self.genre_box = QtWidgets.QGroupBox("Genre")
         genre_layout = QtWidgets.QVBoxLayout()
         self.genre_action = QtWidgets.QCheckBox("Action")
+        self.genre_adventure = QtWidgets.QCheckBox("Adventure")
+        self.genre_animation = QtWidgets.QCheckBox("Animation")
         self.genre_comedy = QtWidgets.QCheckBox("Comedy")
+        self.genre_crime = QtWidgets.QCheckBox("Crime")
+        self.genre_documentary = QtWidgets.QCheckBox("Documentary")
         self.genre_drama = QtWidgets.QCheckBox("Drama")
-        self.genre_scifi = QtWidgets.QCheckBox("Sci-Fi")
+        self.genre_family = QtWidgets.QCheckBox("Family")
+        self.genre_fantasy = QtWidgets.QCheckBox("Fantasy")
+        self.genre_history = QtWidgets.QCheckBox("History")
         self.genre_horror = QtWidgets.QCheckBox("Horror")
+        self.genre_music = QtWidgets.QCheckBox("Music")
+        self.genre_mystery = QtWidgets.QCheckBox("Mystery")
+        self.genre_romance = QtWidgets.QCheckBox("Romance")
+        self.genre_scifi = QtWidgets.QCheckBox("Sci-Fi")
         self.genre_thriller = QtWidgets.QCheckBox("Thriller")
+        self.genre_tvmovie = QtWidgets.QCheckBox("TV Movie")
+        self.genre_war = QtWidgets.QCheckBox("War")
+        self.genre_western = QtWidgets.QCheckBox("Western")
+
         
         genre_layout.addWidget(self.genre_action)
+        genre_layout.addWidget(self.genre_adventure)
+        genre_layout.addWidget(self.genre_animation)
         genre_layout.addWidget(self.genre_comedy)
+        genre_layout.addWidget(self.genre_crime)
+        genre_layout.addWidget(self.genre_documentary)
         genre_layout.addWidget(self.genre_drama)
-        genre_layout.addWidget(self.genre_scifi)
+        genre_layout.addWidget(self.genre_family)
+        genre_layout.addWidget(self.genre_fantasy)
+        genre_layout.addWidget(self.genre_history)
         genre_layout.addWidget(self.genre_horror)
+        genre_layout.addWidget(self.genre_music)
+        genre_layout.addWidget(self.genre_mystery)
+        genre_layout.addWidget(self.genre_romance)
+        genre_layout.addWidget(self.genre_scifi)
         genre_layout.addWidget(self.genre_thriller)
+        genre_layout.addWidget(self.genre_tvmovie)
+        genre_layout.addWidget(self.genre_war)
+        genre_layout.addWidget(self.genre_western)
+
+
         genre_layout.addStretch()
         self.genre_box.setLayout(genre_layout)
         left_layout.addWidget(self.genre_box)
@@ -110,15 +139,6 @@ class MainWindow(QtWidgets.QMainWindow):
         right_widget = QtWidgets.QWidget()
         right_widget.setLayout(right_layout)
         main_layout.addWidget(right_widget)
-        
-        # Create sample movie data (title, rating, genres)
-        self.movie_data = []
-        genres = ["Action", "Comedy", "Drama", "Sci-Fi", "Horror", "Thriller"]
-        for i in range(1, 101):
-            title = f"Movie {i}"
-            rating = random.uniform(5.0, 10.0)
-            movie_genres = random.sample(genres, random.randint(1, 3))  # Each movie has 1-3 genres
-            self.movie_data.append((title, rating, movie_genres))
         
         self.search_button.clicked.connect(self.apply_title_search)
         self.load_recommendations()
@@ -207,7 +227,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.widget().setParent(None)
 
         # Rastgele filmleri veritabanından çek
-        random_movies = self.db.get_random_movies(limit=50)  # 10 rastgele film al
+        random_movies = self.db.get_random_movies(limit=50) 
 
         if not random_movies:
             print("⚠️ No movies found in the database.")
@@ -239,31 +259,57 @@ class MainWindow(QtWidgets.QMainWindow):
         selected_movies = self.db.recommend_movie(USER_ID)
         for movie in selected_movies[1]:
             poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
-            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], "posters" + poster_path)
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path)
             self.recommendations_layout.addWidget(movie_card)
         
         # Add stretch to prevent cards from spreading out too much
         self.recommendations_layout.addStretch()
         
     def update_search_results(self):
-        query = self.search_bar.text().lower()
+        query = self.search_bar.text().lower().strip()
         min_rating = self.rating_slider.value() / 10
         
         # Get selected genres
-        # Buraya diğer türler için de kontrol ekle
         selected_genres = []
         if self.genre_action.isChecked():
             selected_genres.append(28)
+        if self.genre_adventure.isChecked():
+            selected_genres.append(12)
+        if self.genre_animation.isChecked():
+            selected_genres.append(16)
         if self.genre_comedy.isChecked():
             selected_genres.append(35)
+        if self.genre_crime.isChecked():
+            selected_genres.append(80)
+        if self.genre_documentary.isChecked():
+            selected_genres.append(99)
         if self.genre_drama.isChecked():
             selected_genres.append(18)
-        if self.genre_scifi.isChecked():
-            selected_genres.append(878)
+        if self.genre_family.isChecked():
+            selected_genres.append(10751)
+        if self.genre_fantasy.isChecked():
+            selected_genres.append(14)
+        if self.genre_history.isChecked():
+            selected_genres.append(36)
         if self.genre_horror.isChecked():
             selected_genres.append(27)
+        if self.genre_music.isChecked():
+            selected_genres.append(10402)
+        if self.genre_mystery.isChecked():
+            selected_genres.append(9648)
+        if self.genre_romance.isChecked():
+            selected_genres.append(10749)
+        if self.genre_scifi.isChecked():
+            selected_genres.append(878)
         if self.genre_thriller.isChecked():
             selected_genres.append(53)
+        if self.genre_tvmovie.isChecked():
+            selected_genres.append(10770)
+        if self.genre_war.isChecked():
+            selected_genres.append(10752)
+        if self.genre_western.isChecked():
+            selected_genres.append(37)
+
         
         # Clear previous search results
         for i in reversed(range(self.search_results_layout.count())):
@@ -283,7 +329,7 @@ class MainWindow(QtWidgets.QMainWindow):
         i = 0
         for movie in filtered_movies:
             poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
-            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], "posters" + poster_path)
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path)
             row = i // 5
             col = i % 5
             self.search_results_layout.addWidget(movie_card, row, col)
@@ -298,8 +344,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 (len(filtered_movies) // 5) + 1, 0)
             
     def apply_title_search(self):
-        query = self.search_bar.text().lower()
-        # trim yapmayı unutma
+        query = self.search_bar.text().lower().strip()
         
         # Clear previous search results
         for i in reversed(range(self.search_results_layout.count())):
@@ -318,7 +363,7 @@ class MainWindow(QtWidgets.QMainWindow):
         i = 0
         for movie in filtered_movies:
             poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
-            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], "posters" + poster_path)
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path)
             row = i // 5
             col = i % 5
             self.search_results_layout.addWidget(movie_card, row, col)
