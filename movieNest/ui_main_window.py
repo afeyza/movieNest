@@ -120,7 +120,7 @@ class MainWindow(QtWidgets.QMainWindow):
             movie_genres = random.sample(genres, random.randint(1, 3))  # Each movie has 1-3 genres
             self.movie_data.append((title, rating, movie_genres))
         
-        self.search_button.clicked.connect(self.update_search_results)
+        self.search_button.clicked.connect(self.apply_title_search)
         self.load_recommendations()
         self.load_initial_movies()
     
@@ -276,6 +276,41 @@ class MainWindow(QtWidgets.QMainWindow):
         filtered_movies = self.db.search_and_filter(query, selected_genres, [(min_rating, 10)])
 
         if(filtered_movies == "Something went wrong"):
+            QMessageBox.critical(None, "Error", "Something went wrong")
+            return "Error"
+        
+        # Display filtered movies
+        i = 0
+        for movie in filtered_movies:
+            poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], "posters" + poster_path)
+            row = i // 5
+            col = i % 5
+            self.search_results_layout.addWidget(movie_card, row, col)
+            i = i+1
+        
+        # Add an empty widget to fill remaining space
+        if filtered_movies:
+            self.search_results_layout.addItem(
+                QtWidgets.QSpacerItem(20, 20, 
+                                      QtWidgets.QSizePolicy.Expanding,
+                                      QtWidgets.QSizePolicy.Expanding),
+                (len(filtered_movies) // 5) + 1, 0)
+            
+    def apply_title_search(self):
+        query = self.search_bar.text().lower()
+        # trim yapmayı unutma
+        
+        # Clear previous search results
+        for i in reversed(range(self.search_results_layout.count())):
+            item = self.search_results_layout.itemAt(i)
+            if item.widget():
+                item.widget().setParent(None)
+        
+
+        filtered_movies = self.db.search(query)
+
+        if(filtered_movies == "Error"):
             QMessageBox.critical(None, "Error", "Something went wrong")
             return "Error"
         
