@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import random
 import movie_database 
+from PyQt5.QtWidgets import QMessageBox
 USER_ID = 3
 class MainWindow(QtWidgets.QMainWindow):
     
@@ -133,7 +134,7 @@ class MainWindow(QtWidgets.QMainWindow):
             rating = float(rating)
         except ValueError:
             rating = 0.0  # Default to 0.0 if conversion fails
-        
+
         genre_ids = [int(num.strip()) for num in genres_string.split(",")]
         genres = []
         for genre_id in genre_ids:
@@ -249,19 +250,20 @@ class MainWindow(QtWidgets.QMainWindow):
         min_rating = self.rating_slider.value() / 10
         
         # Get selected genres
+        # Buraya diğer türler için de kontrol ekle
         selected_genres = []
         if self.genre_action.isChecked():
-            selected_genres.append("Action")
+            selected_genres.append(28)
         if self.genre_comedy.isChecked():
-            selected_genres.append("Comedy")
+            selected_genres.append(35)
         if self.genre_drama.isChecked():
-            selected_genres.append("Drama")
+            selected_genres.append(18)
         if self.genre_scifi.isChecked():
-            selected_genres.append("Sci-Fi")
+            selected_genres.append(878)
         if self.genre_horror.isChecked():
-            selected_genres.append("Horror")
+            selected_genres.append(27)
         if self.genre_thriller.isChecked():
-            selected_genres.append("Thriller")
+            selected_genres.append(53)
         
         # Clear previous search results
         for i in reversed(range(self.search_results_layout.count())):
@@ -270,21 +272,22 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.widget().setParent(None)
         
         # Filter movies based on search, rating, and genres
-        filtered_movies = []
-        for title, rating, genres in self.movie_data:
-            title_match = query == "" or query in title.lower()
-            rating_match = rating >= min_rating
-            genre_match = not selected_genres or any(g in selected_genres for g in genres)
-            
-            if title_match and rating_match and genre_match:
-                filtered_movies.append((title, rating, genres))
+
+        filtered_movies = self.db.search_and_filter(query, selected_genres, [(min_rating, 10)])
+
+        if(filtered_movies == "Something went wrong"):
+            QMessageBox.critical(None, "Error", "Something went wrong")
+            return "Error"
         
         # Display filtered movies
-        for i, (title, rating, genres) in enumerate(filtered_movies):
-            movie_card = self.create_movie_card(title, rating, genres)
+        i = 0
+        for movie in filtered_movies:
+            poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], "posters" + poster_path)
             row = i // 5
             col = i % 5
             self.search_results_layout.addWidget(movie_card, row, col)
+            i = i+1
         
         # Add an empty widget to fill remaining space
         if filtered_movies:
