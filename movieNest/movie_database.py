@@ -380,7 +380,7 @@ class Database:
             watched_movies = self.cursor.fetchall()
 
             if not watched_movies:  # If watchlist is empty
-                query = "SELECT * FROM movies ORDER BY vote_average DESC LIMIT 10;"
+                query = "SELECT * FROM movies ORDER BY vote_average DESC LIMIT 5;"
                 self.cursor.execute(query)
                 overall_popular_movies = self.cursor.fetchall()
                 return ["Top rated movies", overall_popular_movies]
@@ -410,7 +410,7 @@ class Database:
             print("MOST COMMON GENRE: " + most_common_genre_id)
             most_common_genre = genre_dict.get(int(most_common_genre_id))
             # Get 10 best-rated movies from that genre
-            query = "SELECT * FROM movies WHERE genre_ids LIKE %s ORDER BY vote_average DESC LIMIT 10;"
+            query = "SELECT * FROM movies WHERE genre_ids LIKE %s ORDER BY vote_average DESC LIMIT 5;"
             self.cursor.execute(query, (f"%{most_common_genre_id}%",))
             genre_based_movies = self.cursor.fetchall()
             return ["Best " + str(most_common_genre) + " movies", genre_based_movies]
