@@ -127,13 +127,17 @@ class MainWindow(QtWidgets.QMainWindow):
         min_rating = self.rating_slider.value() / 10
         self.rating_label.setText(f"Min Rating: {min_rating:.1f}")
         
-    def create_movie_card(self, title, rating, genres, poster_path):
+    def create_movie_card(self, title, rating, genres_string, poster_path):
         # Ensure rating is a float
         try:
             rating = float(rating)
         except ValueError:
             rating = 0.0  # Default to 0.0 if conversion fails
-
+        
+        genre_ids = [int(num.strip()) for num in genres_string.split(",")]
+        genres = []
+        for genre_id in genre_ids:
+            genres.append(self.db.genre_dict[genre_id])
         # Create a fixed-size movie card with standardized layout
         movie_widget = QtWidgets.QWidget()
         movie_layout = QtWidgets.QVBoxLayout(movie_widget)
