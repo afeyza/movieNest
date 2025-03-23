@@ -2,7 +2,7 @@
 from movie_database import Database
 
 db = Database()
-db.add_movie(3, 5)
-db.remove_movie(3, 28)
-movies = db.recommend_movie(3)
+#db.add_movie(3, 5)
+#db.remove_movie(3, 28)
+movies = db.recommend_movie(1)
 print(movies)

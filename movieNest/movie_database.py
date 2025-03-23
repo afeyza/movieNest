@@ -352,6 +352,27 @@ class Database:
             return "Hata oluştu"
     
     def recommend_movie(self, user_id):
+        genre_dict = {
+        28: "Action",
+        12: "Adventure",
+        16: "Animation",
+        35: "Comedy",
+        80: "Crime",
+        99: "Documentary",
+        18: "Drama",
+        10751: "Family",
+        14: "Fantasy",
+        36: "History",
+        27: "Horror",
+        10402: "Music",
+        9648: "Mystery",
+        10749: "Romance",
+        878: "Science Fiction",
+        10770: "TV Movie",
+        53: "Thriller",
+        10752: "War",
+        37: "Western"
+        }
         try:
             # Fetch watchlist
             query = "SELECT movie_id FROM user_movie_list WHERE user_id = %s;"
@@ -361,7 +382,8 @@ class Database:
             if not watched_movies:  # If watchlist is empty
                 query = "SELECT * FROM movies ORDER BY vote_average DESC LIMIT 10;"
                 self.cursor.execute(query)
-                return self.cursor.fetchall()
+                overall_popular_movies = self.cursor.fetchall()
+                return ["Top rated movies", overall_popular_movies]
 
             # Get genre_ids from watched movies
             movie_ids = [movie[0] for movie in watched_movies]
@@ -384,12 +406,14 @@ class Database:
             print("GENRES: ")
             print(genres)
             # Find the most common genre
-            most_common_genre = Counter(genres).most_common(1)[0][0]
-            print("MOST COMMON GENRE: " + most_common_genre)
+            most_common_genre_id = Counter(genres).most_common(1)[0][0]
+            print("MOST COMMON GENRE: " + most_common_genre_id)
+            most_common_genre = genre_dict.get(int(most_common_genre_id))
             # Get 10 best-rated movies from that genre
             query = "SELECT * FROM movies WHERE genre_ids LIKE %s ORDER BY vote_average DESC LIMIT 10;"
-            self.cursor.execute(query, (f"%{most_common_genre}%",))
-            return self.cursor.fetchall()
+            self.cursor.execute(query, (f"%{most_common_genre_id}%",))
+            genre_based_movies = self.cursor.fetchall()
+            return ["Best " + str(most_common_genre) + " movies", genre_based_movies]
 
         except mysql.connector.Error as err:
             error_message = f"Error occurred: {err}"
