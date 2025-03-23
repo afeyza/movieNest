@@ -4,8 +4,8 @@ import movie_database
 USER_ID = 3
 class MainWindow(QtWidgets.QMainWindow):
     
-    def _init_(self):
-        super()._init_()
+    def __init__(self):
+        super().__init__()
         self.setWindowTitle("Movie App")
         self.setGeometry(100, 100, 1200, 800)
         self.setFixedSize(1200, 800)  # Fixed window size
@@ -127,7 +127,7 @@ class MainWindow(QtWidgets.QMainWindow):
         min_rating = self.rating_slider.value() / 10
         self.rating_label.setText(f"Min Rating: {min_rating:.1f}")
         
-    def create_movie_card(self, title, rating, genres):
+    def create_movie_card(self, title, rating, genres, poster_path):
         # Ensure rating is a float
         try:
             rating = float(rating)
@@ -143,9 +143,14 @@ class MainWindow(QtWidgets.QMainWindow):
         # Poster with fixed size
         poster = QtWidgets.QLabel()
         poster.setFixedSize(150, 180)
-        pixmap = QtGui.QPixmap(150, 180)
-        pixmap.fill(QtGui.QColor("gray"))
-        poster.setPixmap(pixmap)
+
+        # Try loading the poster from the given path
+        pixmap = QtGui.QPixmap(poster_path)
+        if pixmap.isNull():  # If loading fails, use a placeholder
+            pixmap = QtGui.QPixmap(150, 180)
+            pixmap.fill(QtGui.QColor("gray"))
+
+        poster.setPixmap(pixmap.scaled(150, 180, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
         poster.setAlignment(QtCore.Qt.AlignCenter)
         movie_layout.addWidget(poster)
         
@@ -158,6 +163,7 @@ class MainWindow(QtWidgets.QMainWindow):
         title_label.setFont(font)
         title_label.setWordWrap(False)
         title_label.setTextFormat(QtCore.Qt.PlainText)
+        
         # Use elide to handle long text
         metrics = QtGui.QFontMetrics(title_label.font())
         elided_text = metrics.elidedText(title, QtCore.Qt.ElideRight, 140)
@@ -169,6 +175,7 @@ class MainWindow(QtWidgets.QMainWindow):
         genre_label = QtWidgets.QLabel()
         genre_label.setFixedHeight(20)
         genre_label.setAlignment(QtCore.Qt.AlignCenter)
+        
         # Use elide to handle long text
         metrics = QtGui.QFontMetrics(genre_label.font())
         elided_genre = metrics.elidedText(genre_text, QtCore.Qt.ElideRight, 140)
@@ -185,6 +192,7 @@ class MainWindow(QtWidgets.QMainWindow):
         movie_widget.setStyleSheet("border: 1px solid #cccccc; border-radius: 5px; background-color: #f9f9f9;")
         
         return movie_widget
+
     def load_initial_movies(self):
         """Load initial random movies into the search results layout when the app starts"""
         # Önceki içeriği temizle
@@ -197,13 +205,14 @@ class MainWindow(QtWidgets.QMainWindow):
         random_movies = self.db.get_random_movies(limit=50)  # 10 rastgele film al
 
         if not random_movies:
-            print("⚠ No movies found in the database.")
+            print("⚠️ No movies found in the database.")
             return
 
         # Filmleri ekrana yerleştir
         for i, movie in enumerate(random_movies):
             print(f"Loaded Movie: {movie}")  # Debugging için
-            movie_card = self.create_movie_card(movie[1], movie[2], movie[4])  # Title, Rating, Genres
+            poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path)  # Title, Rating, Genres
             row = i // 5  # 5'li kolon düzeni
             col = i % 5
             self.search_results_layout.addWidget(movie_card, row, col)
@@ -224,7 +233,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # Show 5 random movies
         selected_movies = self.db.recommend_movie(USER_ID)
         for movie in selected_movies[1]:
-            movie_card = self.create_movie_card(movie[1], movie[2], movie[4])
+            poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], "posters" + poster_path)
             self.recommendations_layout.addWidget(movie_card)
         
         # Add stretch to prevent cards from spreading out too much
@@ -280,7 +290,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                       QtWidgets.QSizePolicy.Expanding),
                 (len(filtered_movies) // 5) + 1, 0)
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     app = QtWidgets.QApplication([])
     window = MainWindow()
     window.show()
