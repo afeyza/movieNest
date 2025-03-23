@@ -121,6 +121,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.search_button.clicked.connect(self.update_search_results)
         self.load_recommendations()
+        self.load_initial_movies()
     
     def update_rating_label(self):
         min_rating = self.rating_slider.value() / 10
@@ -184,6 +185,37 @@ class MainWindow(QtWidgets.QMainWindow):
         movie_widget.setStyleSheet("border: 1px solid #cccccc; border-radius: 5px; background-color: #f9f9f9;")
         
         return movie_widget
+    def load_initial_movies(self):
+        """Load initial random movies into the search results layout when the app starts"""
+        # Önceki içeriği temizle
+        for i in reversed(range(self.search_results_layout.count())):
+            item = self.search_results_layout.itemAt(i)
+            if item.widget():
+                item.widget().setParent(None)
+
+        # Rastgele filmleri veritabanından çek
+        random_movies = self.db.get_random_movies(limit=50)  # 10 rastgele film al
+
+        if not random_movies:
+            print("⚠ No movies found in the database.")
+            return
+
+        # Filmleri ekrana yerleştir
+        for i, movie in enumerate(random_movies):
+            print(f"Loaded Movie: {movie}")  # Debugging için
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4])  # Title, Rating, Genres
+            row = i // 5  # 5'li kolon düzeni
+            col = i % 5
+            self.search_results_layout.addWidget(movie_card, row, col)
+
+        # Boş alanı dolduracak bir spacer ekle
+        if random_movies:
+            self.search_results_layout.addItem(
+                QtWidgets.QSpacerItem(20, 20, 
+                                    QtWidgets.QSizePolicy.Expanding,
+                                    QtWidgets.QSizePolicy.Expanding),
+                (len(random_movies) // 5) + 1, 0
+            )
     def load_recommendations(self):
         # Clear previous recommendations
         for i in reversed(range(self.recommendations_layout.count())):
