@@ -5,6 +5,7 @@ import traceback
 import MySQLdb as mdb
 from PyQt5.QtWidgets import QMessageBox
 import re
+from collections import Counter
 
 class Database:
     _instance = None 
@@ -22,8 +23,8 @@ class Database:
             self.db = mdb.connect(
                 host="localhost",
                 user="root",
-                password="Mysql_sifrem1",
-                database="movieNest_481"
+                password="*Tsamil11",
+                database="movieNest"
             )
             self.cursor = self.db.cursor()
             print("✅ Veritabanı bağlantısı başarılı.")
@@ -349,4 +350,49 @@ class Database:
             print(f"⚠️ Veritabanı hatası: {err}")
             traceback.print_exc()
             return "Hata oluştu"
+    
+    def recommend_movie(self, user_id):
+        try:
+            # Fetch watchlist
+            query = "SELECT movie_id FROM user_movie_list WHERE user_id = %s;"
+            self.cursor.execute(query, (user_id,))
+            watched_movies = self.cursor.fetchall()
+
+            if not watched_movies:  # If watchlist is empty
+                query = "SELECT * FROM movies ORDER BY vote_average DESC LIMIT 10;"
+                self.cursor.execute(query)
+                return self.cursor.fetchall()
+
+            # Get genre_ids from watched movies
+            movie_ids = [movie[0] for movie in watched_movies]
+
+            if not movie_ids:
+                return []  # No valid movie IDs, return empty list
+
+            # SQL syntax fix for single movie ID case
+            if len(movie_ids) == 1:
+                query = "SELECT genre_ids FROM movies WHERE id = %s;"
+                self.cursor.execute(query, (movie_ids[0],))
+            else:
+                query = f"SELECT genre_ids FROM movies WHERE id IN ({','.join(['%s'] * len(movie_ids))});"
+                self.cursor.execute(query, tuple(movie_ids))
+
+            genres = [genre_id.strip() for row in self.cursor.fetchall() for genre_id in row[0].split(',')]
+
+            if not genres:
+                return []  # If no genres found, return empty list
+            print("GENRES: ")
+            print(genres)
+            # Find the most common genre
+            most_common_genre = Counter(genres).most_common(1)[0][0]
+            print("MOST COMMON GENRE: " + most_common_genre)
+            # Get 10 best-rated movies from that genre
+            query = "SELECT * FROM movies WHERE genre_ids LIKE %s ORDER BY vote_average DESC LIMIT 10;"
+            self.cursor.execute(query, (f"%{most_common_genre}%",))
+            return self.cursor.fetchall()
+
+        except mysql.connector.Error as err:
+            error_message = f"Error occurred: {err}"
+            QMessageBox.critical(None, "Error", error_message)
+            return []
 
