@@ -1,13 +1,15 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import random
-
+import movie_database 
+USER_ID = 3
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super().__init__()
+    
+    def _init_(self):
+        super()._init_()
         self.setWindowTitle("Movie App")
         self.setGeometry(100, 100, 1200, 800)
         self.setFixedSize(1200, 800)  # Fixed window size
-        
+        self.db = movie_database.Database()
         central_widget = QtWidgets.QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QtWidgets.QHBoxLayout(central_widget)
@@ -125,6 +127,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.rating_label.setText(f"Min Rating: {min_rating:.1f}")
         
     def create_movie_card(self, title, rating, genres):
+        # Ensure rating is a float
+        try:
+            rating = float(rating)
+        except ValueError:
+            rating = 0.0  # Default to 0.0 if conversion fails
+
         # Create a fixed-size movie card with standardized layout
         movie_widget = QtWidgets.QWidget()
         movie_layout = QtWidgets.QVBoxLayout(movie_widget)
@@ -176,16 +184,15 @@ class MainWindow(QtWidgets.QMainWindow):
         movie_widget.setStyleSheet("border: 1px solid #cccccc; border-radius: 5px; background-color: #f9f9f9;")
         
         return movie_widget
-        
     def load_recommendations(self):
         # Clear previous recommendations
         for i in reversed(range(self.recommendations_layout.count())):
             self.recommendations_layout.itemAt(i).widget().setParent(None)
         
         # Show 5 random movies
-        selected_movies = random.sample(self.movie_data, 5)
-        for title, rating, genres in selected_movies:
-            movie_card = self.create_movie_card(title, rating, genres)
+        selected_movies = self.db.recommend_movie(USER_ID)
+        for movie in selected_movies[1]:
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4])
             self.recommendations_layout.addWidget(movie_card)
         
         # Add stretch to prevent cards from spreading out too much
@@ -241,7 +248,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                       QtWidgets.QSizePolicy.Expanding),
                 (len(filtered_movies) // 5) + 1, 0)
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     app = QtWidgets.QApplication([])
     window = MainWindow()
     window.show()
