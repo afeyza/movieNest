@@ -2,14 +2,15 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import random
 import movie_database 
 from PyQt5.QtWidgets import QMessageBox
-USER_ID = 3
+USER_ID = 1
+
 class MainWindow(QtWidgets.QMainWindow):
     
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Movie App")
-        self.setGeometry(100, 100, 1200, 800)
-        self.setFixedSize(1200, 800)  # Fixed window size
+        self.setGeometry(100, 100, 1200, 900)
+        self.setFixedSize(1200, 900)  # Fixed window size
         self.db = movie_database.Database()
         central_widget = QtWidgets.QWidget()
         self.setCentralWidget(central_widget)
@@ -119,7 +120,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.recommendations_layout.setSpacing(20)  # Space between movie cards
         recommendations_container.addWidget(self.recommendations_content)
         self.recommendations_box.setLayout(recommendations_container)
-        self.recommendations_box.setFixedHeight(300)  # Fixed height for recommendations
+        self.recommendations_box.setFixedHeight(350)  # Fixed height for recommendations
         right_layout.addWidget(self.recommendations_box)
         
         # Lower part: Search results (scrollable)
@@ -147,8 +148,17 @@ class MainWindow(QtWidgets.QMainWindow):
     def update_rating_label(self):
         min_rating = self.rating_slider.value() / 10
         self.rating_label.setText(f"Min Rating: {min_rating:.1f}")
+    
+    def add_to_watchlist(self, movie_id):
+        # This function would add the movie to the user's watchlist in the database
+        # For now, just show a message indicating success
         
-    def create_movie_card(self, title, rating, genres_string, poster_path):
+        result = self.db.add_movie(USER_ID, movie_id)
+        if result == 1:
+            QMessageBox.information(self, "Success", f"Movie added to your watchlist!")
+            
+        
+    def create_movie_card(self, title, rating, genres_string, poster_path, movie_id=None):
         # Ensure rating is a float
         try:
             rating = float(rating)
@@ -163,7 +173,7 @@ class MainWindow(QtWidgets.QMainWindow):
         movie_widget = QtWidgets.QWidget()
         movie_layout = QtWidgets.QVBoxLayout(movie_widget)
         movie_layout.setContentsMargins(5, 5, 5, 5)
-        movie_widget.setFixedSize(160, 280)  # Fixed size for movie cards
+        movie_widget.setFixedSize(160, 310)  # Increase height for Add button
         
         # Poster with fixed size
         poster = QtWidgets.QLabel()
@@ -213,6 +223,13 @@ class MainWindow(QtWidgets.QMainWindow):
         imdb_label.setAlignment(QtCore.Qt.AlignCenter)
         movie_layout.addWidget(imdb_label)
         
+        # Add the "Add to Watchlist" button
+        if movie_id is not None:
+            add_button = QtWidgets.QPushButton("+ Add to Watchlist")
+            add_button.setStyleSheet("background-color: #3498db; color: white; font-weight: bold;")
+            add_button.clicked.connect(lambda: self.add_to_watchlist(movie_id))
+            movie_layout.addWidget(add_button)
+        
         # Set a frame around the movie card
         movie_widget.setStyleSheet("border: 1px solid #cccccc; border-radius: 5px; background-color: #f9f9f9;")
         
@@ -230,14 +247,15 @@ class MainWindow(QtWidgets.QMainWindow):
         random_movies = self.db.get_random_movies(limit=50) 
 
         if not random_movies:
-            print("⚠️ No movies found in the database.")
+            print("⚠ No movies found in the database.")
             return
 
         # Filmleri ekrana yerleştir
         for i, movie in enumerate(random_movies):
             print(f"Loaded Movie: {movie}")  # Debugging için
+            movie_id = movie[0]  # Assuming the first element is the movie ID
             poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
-            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path)  # Title, Rating, Genres
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path, movie_id)
             row = i // 5  # 5'li kolon düzeni
             col = i % 5
             self.search_results_layout.addWidget(movie_card, row, col)
@@ -250,6 +268,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                     QtWidgets.QSizePolicy.Expanding),
                 (len(random_movies) // 5) + 1, 0
             )
+            
     def load_recommendations(self):
         # Clear previous recommendations
         for i in reversed(range(self.recommendations_layout.count())):
@@ -258,8 +277,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Show 5 random movies
         selected_movies = self.db.recommend_movie(USER_ID)
         for movie in selected_movies[1]:
+            movie_id = movie[0]  # Assuming the first element is the movie ID
             poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
-            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path)
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path, movie_id)
             self.recommendations_layout.addWidget(movie_card)
         
         # Add stretch to prevent cards from spreading out too much
@@ -318,7 +338,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.widget().setParent(None)
         
         # Filter movies based on search, rating, and genres
-
         filtered_movies = self.db.search_and_filter(query, selected_genres, [(min_rating, 10)])
 
         if(filtered_movies == "Something went wrong"):
@@ -328,8 +347,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Display filtered movies
         i = 0
         for movie in filtered_movies:
+            movie_id = movie[0]  # Assuming the first element is the movie ID
             poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
-            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path)
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path, movie_id)
             row = i // 5
             col = i % 5
             self.search_results_layout.addWidget(movie_card, row, col)
@@ -352,7 +372,6 @@ class MainWindow(QtWidgets.QMainWindow):
             if item.widget():
                 item.widget().setParent(None)
         
-
         filtered_movies = self.db.search(query)
 
         if(filtered_movies == "Error"):
@@ -362,8 +381,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Display filtered movies
         i = 0
         for movie in filtered_movies:
+            movie_id = movie[0]  # Assuming the first element is the movie ID
             poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
-            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path)
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path, movie_id)
             row = i // 5
             col = i % 5
             self.search_results_layout.addWidget(movie_card, row, col)

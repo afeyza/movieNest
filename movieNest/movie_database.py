@@ -43,8 +43,8 @@ class Database:
             self.db = mdb.connect(
                 host="localhost",
                 user="root",
-                password="Mysql_sifrem1",
-                database="movieNest_481"
+                password="mysql123*",
+                database="movienest"
             )
             self.cursor = self.db.cursor()
             print("✅ Veritabanı bağlantısı başarılı.")
@@ -388,7 +388,7 @@ class Database:
                 """
                 self.cursor.execute(query)
                 overall_popular_movies = self.cursor.fetchall()
-                return ["Top rated movies", overall_popular_movies]
+                return ["Popular movies", overall_popular_movies]
 
             # Get genre_ids from watched movies
             movie_ids = [movie[0] for movie in watched_movies]
@@ -424,4 +424,3 @@ class Database:
             error_message = f"Error occurred: {err}"
             QMessageBox.critical(None, "Error", error_message)
             return []
-
