@@ -23,7 +23,7 @@ class Database:
             self.db = mdb.connect(
                 host="localhost",
                 user="root",
-                password="*Tsamil11",
+                password="mysql123*",
                 database="movieNest"
             )
             self.cursor = self.db.cursor()

@@ -1,0 +1,61 @@
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QStackedWidget
+
+class LoginPage(QWidget):
+    def __init__(self, stacked_widget):
+        super().__init__()
+        self.stacked_widget = stacked_widget
+        layout = QVBoxLayout()
+        login_button = QPushButton("Giriş Yap")
+        login_button.clicked.connect(self.go_to_main_page)
+        layout.addWidget(login_button)
+        self.setLayout(layout)
+
+    def go_to_main_page(self):
+        self.stacked_widget.setCurrentIndex(1)
+
+class MainPage(QWidget):
+    def __init__(self, stacked_widget):
+        super().__init__()
+        self.stacked_widget = stacked_widget
+        layout = QVBoxLayout()
+        watchlist_button = QPushButton("Watchlist")
+        watchlist_button.clicked.connect(self.go_to_watchlist)
+        layout.addWidget(watchlist_button)
+        self.setLayout(layout)
+
+    def go_to_watchlist(self):
+        self.stacked_widget.setCurrentIndex(2)
+
+class WatchlistPage(QWidget):
+    def __init__(self, stacked_widget):
+        super().__init__()
+        self.stacked_widget = stacked_widget
+        layout = QVBoxLayout()
+        back_button = QPushButton("Ana Sayfaya Dön")
+        back_button.clicked.connect(self.go_to_main_page)
+        layout.addWidget(back_button)
+        self.setLayout(layout)
+
+    def go_to_main_page(self):
+        self.stacked_widget.setCurrentIndex(1)
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Movie App")
+        
+        self.stacked_widget = QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
+        
+        self.login_page = LoginPage(self.stacked_widget)
+        self.main_page = MainPage(self.stacked_widget)
+        self.watchlist_page = WatchlistPage(self.stacked_widget)
+        
+        self.stacked_widget.addWidget(self.login_page)
+        self.stacked_widget.addWidget(self.main_page)
+        self.stacked_widget.addWidget(self.watchlist_page)
+
+app = QApplication([])
+window = MainWindow()
+window.show()
+app.exec_()

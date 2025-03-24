@@ -1,14 +1,15 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import random
 import movie_database 
+from PyQt5.QtWidgets import QMessageBox
 USER_ID = 3
 class MainWindow(QtWidgets.QMainWindow):
     
     def _init_(self):
         super()._init_()
         self.setWindowTitle("Movie App")
-        self.setGeometry(100, 100, 1200, 800)
-        self.setFixedSize(1200, 800)  # Fixed window size
+        self.setGeometry(100, 100, 1200, 900)
+        self.setFixedSize(1200, 900)  # Fixed window size
         self.db = movie_database.Database()
         central_widget = QtWidgets.QWidget()
         self.setCentralWidget(central_widget)
@@ -22,18 +23,47 @@ class MainWindow(QtWidgets.QMainWindow):
         self.genre_box = QtWidgets.QGroupBox("Genre")
         genre_layout = QtWidgets.QVBoxLayout()
         self.genre_action = QtWidgets.QCheckBox("Action")
+        self.genre_adventure = QtWidgets.QCheckBox("Adventure")
+        self.genre_animation = QtWidgets.QCheckBox("Animation")
         self.genre_comedy = QtWidgets.QCheckBox("Comedy")
+        self.genre_crime = QtWidgets.QCheckBox("Crime")
+        self.genre_documentary = QtWidgets.QCheckBox("Documentary")
         self.genre_drama = QtWidgets.QCheckBox("Drama")
-        self.genre_scifi = QtWidgets.QCheckBox("Sci-Fi")
+        self.genre_family = QtWidgets.QCheckBox("Family")
+        self.genre_fantasy = QtWidgets.QCheckBox("Fantasy")
+        self.genre_history = QtWidgets.QCheckBox("History")
         self.genre_horror = QtWidgets.QCheckBox("Horror")
+        self.genre_music = QtWidgets.QCheckBox("Music")
+        self.genre_mystery = QtWidgets.QCheckBox("Mystery")
+        self.genre_romance = QtWidgets.QCheckBox("Romance")
+        self.genre_scifi = QtWidgets.QCheckBox("Sci-Fi")
         self.genre_thriller = QtWidgets.QCheckBox("Thriller")
+        self.genre_tvmovie = QtWidgets.QCheckBox("TV Movie")
+        self.genre_war = QtWidgets.QCheckBox("War")
+        self.genre_western = QtWidgets.QCheckBox("Western")
+
         
         genre_layout.addWidget(self.genre_action)
+        genre_layout.addWidget(self.genre_adventure)
+        genre_layout.addWidget(self.genre_animation)
         genre_layout.addWidget(self.genre_comedy)
+        genre_layout.addWidget(self.genre_crime)
+        genre_layout.addWidget(self.genre_documentary)
         genre_layout.addWidget(self.genre_drama)
-        genre_layout.addWidget(self.genre_scifi)
+        genre_layout.addWidget(self.genre_family)
+        genre_layout.addWidget(self.genre_fantasy)
+        genre_layout.addWidget(self.genre_history)
         genre_layout.addWidget(self.genre_horror)
+        genre_layout.addWidget(self.genre_music)
+        genre_layout.addWidget(self.genre_mystery)
+        genre_layout.addWidget(self.genre_romance)
+        genre_layout.addWidget(self.genre_scifi)
         genre_layout.addWidget(self.genre_thriller)
+        genre_layout.addWidget(self.genre_tvmovie)
+        genre_layout.addWidget(self.genre_war)
+        genre_layout.addWidget(self.genre_western)
+
+
         genre_layout.addStretch()
         self.genre_box.setLayout(genre_layout)
         left_layout.addWidget(self.genre_box)
@@ -89,7 +119,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.recommendations_layout.setSpacing(20)  # Space between movie cards
         recommendations_container.addWidget(self.recommendations_content)
         self.recommendations_box.setLayout(recommendations_container)
-        self.recommendations_box.setFixedHeight(300)  # Fixed height for recommendations
+        self.recommendations_box.setFixedHeight(350)  # Fixed height for recommendations
         right_layout.addWidget(self.recommendations_box)
         
         # Lower part: Search results (scrollable)
@@ -110,35 +140,49 @@ class MainWindow(QtWidgets.QMainWindow):
         right_widget.setLayout(right_layout)
         main_layout.addWidget(right_widget)
         
-        # Create sample movie data (title, rating, genres)
-        self.movie_data = []
-        genres = ["Action", "Comedy", "Drama", "Sci-Fi", "Horror", "Thriller"]
-        for i in range(1, 101):
-            title = f"Movie {i}"
-            rating = random.uniform(5.0, 10.0)
-            movie_genres = random.sample(genres, random.randint(1, 3))  # Each movie has 1-3 genres
-            self.movie_data.append((title, rating, movie_genres))
-        
-        self.search_button.clicked.connect(self.update_search_results)
+        self.search_button.clicked.connect(self.apply_title_search)
         self.load_recommendations()
         self.load_initial_movies()
     
     def update_rating_label(self):
         min_rating = self.rating_slider.value() / 10
         self.rating_label.setText(f"Min Rating: {min_rating:.1f}")
+
+    def add_to_watchlist(self, movie_id):
+    # This function would add the movie to the user's watchlist in the database
+    # For now, just show a message indicating success
+        try:
+            result = self.db.add_to_watchlist(USER_ID, movie_id)
+            if result == "Success":
+                QMessageBox.information(self, "Success", f"Movie added to your watchlist!")
+            else:
+                QMessageBox.information(self, "Already Added", "This movie is already in your watchlist!")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to add movie to watchlist: {str(e)}")  
         
+<<<<<<< Updated upstream
     def create_movie_card(self, title, rating, genres):
+=======
+    def create_movie_card(self, title, rating, genres_string, poster_path, movie_id=None):
+>>>>>>> Stashed changes
         # Ensure rating is a float
         try:
             rating = float(rating)
         except ValueError:
             rating = 0.0  # Default to 0.0 if conversion fails
 
+<<<<<<< Updated upstream
+=======
+        genre_ids = [int(num.strip()) for num in genres_string.split(",")]
+        genres = []
+        for genre_id in genre_ids:
+            genres.append(self.db.genre_dict[genre_id])
+>>>>>>> Stashed changes
         # Create a fixed-size movie card with standardized layout
         movie_widget = QtWidgets.QWidget()
         movie_layout = QtWidgets.QVBoxLayout(movie_widget)
         movie_layout.setContentsMargins(5, 5, 5, 5)
-        movie_widget.setFixedSize(160, 280)  # Fixed size for movie cards
+        movie_widget.setFixedSize(160, 310)  # Fixed size for movie cards
         
         # Poster with fixed size
         poster = QtWidgets.QLabel()
@@ -180,6 +224,13 @@ class MainWindow(QtWidgets.QMainWindow):
         imdb_label.setFixedHeight(20)
         imdb_label.setAlignment(QtCore.Qt.AlignCenter)
         movie_layout.addWidget(imdb_label)
+
+        # Add the "Add to Watchlist" button
+        if movie_id is not None:
+            add_button = QtWidgets.QPushButton("+ Add to Watchlist")
+            add_button.setStyleSheet("background-color: #3498db; color: white; font-weight: bold;")
+            add_button.clicked.connect(lambda: self.add_to_watchlist(movie_id))
+            movie_layout.addWidget(add_button)
         
         # Set a frame around the movie card
         movie_widget.setStyleSheet("border: 1px solid #cccccc; border-radius: 5px; background-color: #f9f9f9;")
@@ -193,22 +244,30 @@ class MainWindow(QtWidgets.QMainWindow):
             if item.widget():
                 item.widget().setParent(None)
 
-        # Rastgele filmleri veritabanından çek
-        random_movies = self.db.get_random_movies(limit=50)  # 10 rastgele film al
+        # Get random movies from database
+        random_movies = self.db.get_random_movies(limit=50) 
 
         if not random_movies:
             print("⚠ No movies found in the database.")
             return
 
-        # Filmleri ekrana yerleştir
+        # Display movies on screen
         for i, movie in enumerate(random_movies):
+<<<<<<< Updated upstream
             print(f"Loaded Movie: {movie}")  # Debugging için
             movie_card = self.create_movie_card(movie[1], movie[2], movie[4])  # Title, Rating, Genres
             row = i // 5  # 5'li kolon düzeni
+=======
+            print(f"Loaded Movie: {movie}")  # for debugging
+            movie_id = movie[0]  # Assuming the first element is the movie ID
+            poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path, movie_id)  # Title, Rating, Genres
+            row = i // 5  # 5 columns layout
+>>>>>>> Stashed changes
             col = i % 5
             self.search_results_layout.addWidget(movie_card, row, col)
 
-        # Boş alanı dolduracak bir spacer ekle
+        # Add spacer to fill empty space
         if random_movies:
             self.search_results_layout.addItem(
                 QtWidgets.QSpacerItem(20, 20, 
@@ -222,32 +281,81 @@ class MainWindow(QtWidgets.QMainWindow):
             self.recommendations_layout.itemAt(i).widget().setParent(None)
         
         # Show 5 random movies
+<<<<<<< Updated upstream
         selected_movies = self.db.recommend_movie(USER_ID)
         for movie in selected_movies[1]:
             movie_card = self.create_movie_card(movie[1], movie[2], movie[4])
             self.recommendations_layout.addWidget(movie_card)
+=======
+        #selected_movies = self.db.recommend_movie(USER_ID)
+        #for movie in selected_movies[1]:
+        #    movie_id = movie[0] # Assuming the first element is the movie ID
+        #    poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
+        #    movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path, movie_id)
+        #    self.recommendations_layout.addWidget(movie_card)
+
+        # Get recommendations - returns [category_title, movie_list]
+        recommendation_data = self.db.recommend_movie(USER_ID)
+
+        # Check if we got valid data
+        if recommendation_data and len(recommendation_data) >= 2:
+            recommended_movies = recommendation_data[1]  # This is the list of movies
+        
+            for movie in recommended_movies:
+                movie_id = movie[0]  # Assuming the first element is the movie ID
+                poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
+                movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path, movie_id)
+                self.recommendations_layout.addWidget(movie_card)
+>>>>>>> Stashed changes
         
         # Add stretch to prevent cards from spreading out too much
         self.recommendations_layout.addStretch()
         
     def update_search_results(self):
-        query = self.search_bar.text().lower()
+        query = self.search_bar.text().lower().strip()
         min_rating = self.rating_slider.value() / 10
         
         # Get selected genres
         selected_genres = []
         if self.genre_action.isChecked():
-            selected_genres.append("Action")
+            selected_genres.append(28)
+        if self.genre_adventure.isChecked():
+            selected_genres.append(12)
+        if self.genre_animation.isChecked():
+            selected_genres.append(16)
         if self.genre_comedy.isChecked():
-            selected_genres.append("Comedy")
+            selected_genres.append(35)
+        if self.genre_crime.isChecked():
+            selected_genres.append(80)
+        if self.genre_documentary.isChecked():
+            selected_genres.append(99)
         if self.genre_drama.isChecked():
-            selected_genres.append("Drama")
-        if self.genre_scifi.isChecked():
-            selected_genres.append("Sci-Fi")
+            selected_genres.append(18)
+        if self.genre_family.isChecked():
+            selected_genres.append(10751)
+        if self.genre_fantasy.isChecked():
+            selected_genres.append(14)
+        if self.genre_history.isChecked():
+            selected_genres.append(36)
         if self.genre_horror.isChecked():
-            selected_genres.append("Horror")
+            selected_genres.append(27)
+        if self.genre_music.isChecked():
+            selected_genres.append(10402)
+        if self.genre_mystery.isChecked():
+            selected_genres.append(9648)
+        if self.genre_romance.isChecked():
+            selected_genres.append(10749)
+        if self.genre_scifi.isChecked():
+            selected_genres.append(878)
         if self.genre_thriller.isChecked():
-            selected_genres.append("Thriller")
+            selected_genres.append(53)
+        if self.genre_tvmovie.isChecked():
+            selected_genres.append(10770)
+        if self.genre_war.isChecked():
+            selected_genres.append(10752)
+        if self.genre_western.isChecked():
+            selected_genres.append(37)
+
         
         # Clear previous search results
         for i in reversed(range(self.search_results_layout.count())):
@@ -256,21 +364,57 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.widget().setParent(None)
         
         # Filter movies based on search, rating, and genres
-        filtered_movies = []
-        for title, rating, genres in self.movie_data:
-            title_match = query == "" or query in title.lower()
-            rating_match = rating >= min_rating
-            genre_match = not selected_genres or any(g in selected_genres for g in genres)
-            
-            if title_match and rating_match and genre_match:
-                filtered_movies.append((title, rating, genres))
+        filtered_movies = self.db.search_and_filter(query, selected_genres, [(min_rating, 10)])
+
+        if(filtered_movies == "Something went wrong"):
+            QMessageBox.critical(None, "Error", "Something went wrong")
+            return "Error"
         
         # Display filtered movies
-        for i, (title, rating, genres) in enumerate(filtered_movies):
-            movie_card = self.create_movie_card(title, rating, genres)
+        i = 0
+        for movie in filtered_movies:
+            movie_id = movie[0] #Assuming the first element is the movie ID
+            poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path, movie_id)
             row = i // 5
             col = i % 5
             self.search_results_layout.addWidget(movie_card, row, col)
+            i = i+1
+        
+        # Add an empty widget to fill remaining space
+        if filtered_movies:
+            self.search_results_layout.addItem(
+                QtWidgets.QSpacerItem(20, 20, 
+                                      QtWidgets.QSizePolicy.Expanding,
+                                      QtWidgets.QSizePolicy.Expanding),
+                (len(filtered_movies) // 5) + 1, 0)
+            
+    def apply_title_search(self):
+        query = self.search_bar.text().lower().strip()
+        
+        # Clear previous search results
+        for i in reversed(range(self.search_results_layout.count())):
+            item = self.search_results_layout.itemAt(i)
+            if item.widget():
+                item.widget().setParent(None)
+        
+
+        filtered_movies = self.db.search(query)
+
+        if(filtered_movies == "Error"):
+            QMessageBox.critical(None, "Error", "Something went wrong")
+            return "Error"
+        
+        # Display filtered movies
+        i = 0
+        for movie in filtered_movies:
+            movie_id = movie[0]  # Assuming the first element is the movie ID
+            poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path, movie_id)
+            row = i // 5
+            col = i % 5
+            self.search_results_layout.addWidget(movie_card, row, col)
+            i = i+1
         
         # Add an empty widget to fill remaining space
         if filtered_movies:
