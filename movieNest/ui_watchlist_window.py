@@ -18,7 +18,7 @@ class WatchlistWindow(QtWidgets.QMainWindow):
         
         # Left: Image
         self.image_label = QtWidgets.QLabel()
-        pixmap = QtGui.QPixmap("watchlistside.png")
+        pixmap = QtGui.QPixmap("posters/watchlistside.png")
         pixmap = pixmap.scaled(300, 800, QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
         self.image_label.setPixmap(pixmap)
         self.image_label.setScaledContents(True)
