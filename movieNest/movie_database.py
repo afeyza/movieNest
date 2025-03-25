@@ -43,8 +43,8 @@ class Database:
             self.db = mdb.connect(
                 host="localhost",
                 user="root",
-                password="Mysql_sifrem1",
-                database="movieNest_481"
+                password="mysql123*",
+                database="movienest"
             )
             self.cursor = self.db.cursor()
             print("✅ Veritabanı bağlantısı başarılı.")

@@ -126,6 +126,24 @@ class MainWindow(QtWidgets.QMainWindow):
         # Lower part: Search results (scrollable)
         self.search_results_box = QtWidgets.QGroupBox("Search Results")
         search_results_container = QtWidgets.QVBoxLayout()
+        # New sorting layout for top of search results
+        sort_layout = QtWidgets.QHBoxLayout()
+        sort_label = QtWidgets.QLabel("Sort by:")
+        self.sort_box = QtWidgets.QComboBox()
+        self.sort_box.addItems([
+            "Default",
+            "Alphabetic (A-Z)", 
+            "Alphabetic (Z-A)", 
+            "Rating (High-Low)", 
+            "Rating (Low-High)"
+        ])
+        self.sort_box.currentTextChanged.connect(self.update_sort)
+        
+        sort_layout.addWidget(sort_label)
+        sort_layout.addWidget(self.sort_box)
+        sort_layout.addStretch()  # Push sorting widgets to the left
+        
+        search_results_container.addLayout(sort_layout)
         self.search_results_scroll = QtWidgets.QScrollArea()
         self.search_results_scroll.setWidgetResizable(True)
         self.search_results_content = QtWidgets.QWidget()
@@ -238,6 +256,75 @@ class MainWindow(QtWidgets.QMainWindow):
         
         return movie_widget
 
+    def update_sort(self):
+        """Update search results based on selected sorting option"""
+        current_sort = self.sort_box.currentText()
+        
+        # Collect the current search parameters
+        query = self.search_bar.text().lower().strip()
+        min_rating = self.rating_slider.value() / 10
+        
+        # Get selected genres
+        selected_genres = []
+        genre_map = {
+            'Action': 28, 'Adventure': 12, 'Animation': 16, 'Comedy': 35, 
+            'Crime': 80, 'Documentary': 99, 'Drama': 18, 'Family': 10751, 
+            'Fantasy': 14, 'History': 36, 'Horror': 27, 'Music': 10402, 
+            'Mystery': 9648, 'Romance': 10749, 'Sci-Fi': 878, 
+            'Thriller': 53, 'TV Movie': 10770, 'War': 10752, 'Western': 37
+        }
+        
+        # Check each genre checkbox
+        for genre_name, genre_id in genre_map.items():
+            checkbox = getattr(self, f'genre_{genre_name.lower().replace(" ", "")}', None)
+            if checkbox and checkbox.isChecked():
+                selected_genres.append(genre_id)
+
+        # Determine the movies to sort based on current view
+        if query or selected_genres or min_rating > 0:
+            # If there's an active search or filter
+            filtered_movies = self.db.search_and_filter(query, selected_genres, [(min_rating, 10)])
+        else:
+            # If no active filters, use random movies
+            filtered_movies = self.db.get_random_movies(limit=50)
+
+        if filtered_movies == "Something went wrong":
+            QMessageBox.critical(None, "Error", "Something went wrong")
+            return
+
+        # Sort the movies based on selected option
+        if current_sort == "Alphabetic (A-Z)":
+            filtered_movies.sort(key=lambda x: x[1])  # Sort by movie title
+        elif current_sort == "Alphabetic (Z-A)":
+            filtered_movies.sort(key=lambda x: x[1], reverse=True)
+        elif current_sort == "Rating (High-Low)":
+            filtered_movies.sort(key=lambda x: float(x[2]), reverse=True)
+        elif current_sort == "Rating (Low-High)":
+            filtered_movies.sort(key=lambda x: float(x[2]))
+        
+        # Clear previous search results
+        for i in reversed(range(self.search_results_layout.count())):
+            item = self.search_results_layout.itemAt(i)
+            if item.widget():
+                item.widget().setParent(None)
+        
+        # Display sorted movies
+        for i, movie in enumerate(filtered_movies):
+            movie_id = movie[0]  # Assuming the first element is the movie ID
+            poster_path = "posters/" + movie[3] if movie[3] else "default_poster.jpg"
+            movie_card = self.create_movie_card(movie[1], movie[2], movie[4], poster_path, movie_id)
+            row = i // 5
+            col = i % 5
+            self.search_results_layout.addWidget(movie_card, row, col)
+        
+        # Add an empty widget to fill remaining space
+        if filtered_movies:
+            self.search_results_layout.addItem(
+                QtWidgets.QSpacerItem(20, 20, 
+                                      QtWidgets.QSizePolicy.Expanding,
+                                      QtWidgets.QSizePolicy.Expanding),
+                (len(filtered_movies) // 5) + 1, 0)
+    
     def load_initial_movies(self):
         """Load initial random movies into the search results layout when the app starts"""
         # Önceki içeriği temizle
