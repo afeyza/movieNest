@@ -43,8 +43,8 @@ class Database:
             self.db = mdb.connect(
                 host="localhost",
                 user="root",
-                password="*Tsamil11",
-                database="movieNest"
+                password="Mysql_sifrem1",
+                database="movieNest_481"
             )
             self.cursor = self.db.cursor()
             print("✅ Veritabanı bağlantısı başarılı.")
@@ -128,6 +128,11 @@ class Database:
 
         except mysql.connector.Error as err:
             print(f"⚠️ Veritabanı hatası: {err}")
+            traceback.print_exc()
+            return False
+        
+        except Exception as e:  # catch other errors
+            print(f"⚠️ Beklenmeyen hata: {e}")
             traceback.print_exc()
             return False
 
@@ -380,10 +385,15 @@ class Database:
             watched_movies = self.cursor.fetchall()
 
             if not watched_movies:  # If watchlist is empty
-                query = "SELECT * FROM movies ORDER BY vote_average DESC LIMIT 5;"
+                query = """
+                SELECT * FROM movies
+                WHERE vote_average > 8.0
+                ORDER BY RAND()
+                LIMIT 5;
+                """
                 self.cursor.execute(query)
                 overall_popular_movies = self.cursor.fetchall()
-                return ["Top rated movies", overall_popular_movies]
+                return ["Popular movies", overall_popular_movies]
 
             # Get genre_ids from watched movies
             movie_ids = [movie[0] for movie in watched_movies]
