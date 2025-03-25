@@ -45,8 +45,6 @@ class MainApp(QtWidgets.QMainWindow):
         """ Ana sayfaya geçiş yap """
         self.menuBar().setVisible(True)
         self.stack.setCurrentIndex(1)
-        self.main_window.set_user(user_id)
-        self.watchlist_window.set_user(user_id)
         
     def show_watchlist_window(self):
         """Watchlist"""
