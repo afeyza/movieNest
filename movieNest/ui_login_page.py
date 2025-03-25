@@ -15,17 +15,21 @@ class LoginPage(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         self.resize(400, 300)
         self.username_input = QtWidgets.QLineEdit()
-        self.username_input.setPlaceholderText("Kullanıcı Adı")
+        self.username_input.setPlaceholderText("User Name")
         layout.addWidget(self.username_input)
 
         self.password_input = QtWidgets.QLineEdit()
-        self.password_input.setPlaceholderText("Şifre")
+        self.password_input.setPlaceholderText("Password")
         self.password_input.setEchoMode(QtWidgets.QLineEdit.Password)
         layout.addWidget(self.password_input)
 
-        self.login_button = QtWidgets.QPushButton("Giriş Yap")
+        self.login_button = QtWidgets.QPushButton("Login")
         self.login_button.clicked.connect(self.login)
         layout.addWidget(self.login_button)
+        
+        self.register_button = QtWidgets.QPushButton("Register")
+        self.register_button.clicked.connect(self.register)
+        layout.addWidget(self.register_button)
 
         self.setLayout(layout)
 
@@ -37,7 +41,18 @@ class LoginPage(QtWidgets.QWidget):
             id=self.db.get_user_id(username,password)
             ui_main_window.USER_ID=id
             ui_watchlist_window.USER_ID=id
-            print("✅ Giriş başarılı! Ana sayfaya geçiliyor...")
+            print("Login successful...")
             self.switch_window.emit()
         else:
-            QtWidgets.QMessageBox.warning(self, "Hata", "Geçersiz kullanıcı adı veya şifre!")
+            QtWidgets.QMessageBox.warning(self, "Error", "Invalid username or password!")
+
+    def register(self):
+        username = self.username_input.text().strip()
+        password = self.password_input.text().strip()
+
+        if not username or not password:
+            QtWidgets.QMessageBox.warning(self, "Warning", "Please enter your username and password to register.")
+            return
+
+        result = self.db.register_user(username, password)
+        QtWidgets.QMessageBox.information(self, "Register", result)
