@@ -77,11 +77,11 @@ class Database:
             traceback.print_exc()
             return None
         
-    def get_user(self, user_id):
-        """ ID'ye göre user getir """
+    def get_user_id(self, username, password):
+        """ kullanici adı ve sifreye gore user id getir """
         try:
-            query = "SELECT * FROM Users WHERE id = *"
-            self.cursor.execute(query, (user_id,))
+            query = "SELECT id FROM Users WHERE nickname = %s AND password = %s"
+            self.cursor.execute(query, (username, password))
             result = self.cursor.fetchone()
             return result if result else "User bulunamadı."
 
