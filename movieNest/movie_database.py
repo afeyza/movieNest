@@ -429,4 +429,3 @@ class Database:
             error_message = f"Error occurred: {err}"
             QMessageBox.critical(None, "Error", error_message)
             return []
-
