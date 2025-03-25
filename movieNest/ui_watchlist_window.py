@@ -27,6 +27,20 @@ class WatchlistWindow(QtWidgets.QMainWindow):
         # Right: Content
         right_layout = QtWidgets.QVBoxLayout()
         
+        # ComboBox for sorting at top
+        top_bar = QtWidgets.QHBoxLayout()
+        self.sort_box = QtWidgets.QComboBox()
+        self.sort_box.addItems([
+            "Sort by Added Order",
+            "Alphabetic (A-Z)",
+            "Alphabetic (Z-A)",
+            "Rating (High-Low)",
+            "Rating (Low-High)"
+        ])
+        self.sort_box.currentIndexChanged.connect(self.sort_watchlist)
+        top_bar.addStretch()
+        top_bar.addWidget(self.sort_box)
+        right_layout.addLayout(top_bar)
 
 
         # Scroll area for movie cards
@@ -169,6 +183,23 @@ class WatchlistWindow(QtWidgets.QMainWindow):
         if confirm == QtWidgets.QMessageBox.Yes:
             self.remove_from_watchlist(movie_id, card)
 
+    def sort_watchlist(self):
+        current = self.sort_box.currentText()
+        if self.watchlist == "Empty Watchlist": #?
+            return
+
+        if current == "Alphabetic (A-Z)":
+            sorted_list = self.db.sort("alphabetic", "asc", self.watchlist)
+        elif current == "Alphabetic (Z-A)":
+            sorted_list = self.db.sort("alphabetic", "dsc", self.watchlist)
+        elif current == "Rating (High-Low)":
+            sorted_list = self.db.sort("rating", "dsc", self.watchlist)
+        elif current == "Rating (Low-High)":
+            sorted_list = self.db.sort("rating", "asc", self.watchlist)
+        else:
+            sorted_list = self.watchlist  # Default: eklenme sırası
+
+        self.display_movies(sorted_list)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
