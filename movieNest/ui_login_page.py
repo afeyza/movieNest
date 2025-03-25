@@ -1,13 +1,15 @@
 #Login page for the user
-
+import ui_watchlist_window
+import ui_main_window
 from PyQt5 import QtWidgets, QtCore
-
+from movie_database import Database
 class LoginPage(QtWidgets.QWidget):
     switch_window = QtCore.pyqtSignal()  # Homepage signal
 
     def __init__(self):
         super().__init__()
         self.setup_ui()
+        self.db=Database()
 
     def setup_ui(self):
         layout = QtWidgets.QVBoxLayout()
@@ -31,7 +33,10 @@ class LoginPage(QtWidgets.QWidget):
         username = self.username_input.text()
         password = self.password_input.text()
 
-        if username == "admin" and password == "1234":  # Check the username and password
+        if self.db.login_user(username, password):
+            id=self.db.get_user_id(username,password)
+            ui_main_window.USER_ID=id
+            ui_watchlist_window.USER_ID=id
             print("✅ Giriş başarılı! Ana sayfaya geçiliyor...")
             self.switch_window.emit()
         else:
