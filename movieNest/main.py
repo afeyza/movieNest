@@ -24,32 +24,42 @@ class MainApp(QtWidgets.QMainWindow):
         self.stack.addWidget(self.main_window)  # Page 1 → homepage
         self.stack.addWidget(self.watchlist_window) # Page 2 
         
+        # Menu bar invisable at start
+        self.menu_bar = QtWidgets.QMenuBar()
+        self.setMenuBar(self.menu_bar)
+        self.menu_bar.setVisible(False)
+
+        # Create menu
+        self.create_menu_bar()
+        
         # Go to home page if login is successful
         self.login_page.switch_window.connect(self.show_main_window)
 
         # Opening page → login page
         self.stack.setCurrentIndex(0)
-        self.menuBar().setVisible(False)
         
-        #Adding Menu bar
-        self.create_menu_bar()
+        
 
     def create_menu_bar(self):
-        menubar = self.menuBar()
-        watchlist_menu = menubar.addMenu("Menu")
-        open_watchlist_action = QtWidgets.QAction("Watchlist", self)
-        open_watchlist_action.triggered.connect(self.show_watchlist_window)
-        watchlist_menu.addAction(open_watchlist_action)
+        self.navigation_menu = self.menu_bar.addMenu("Menu")
+        # main window added to menu
+        self.open_main_action = QtWidgets.QAction("Main Window", self)
+        self.open_main_action.triggered.connect(self.show_main_window)
+        self.navigation_menu.addAction(self.open_main_action)
+        # watchlist window added to menu
+        self.open_watchlist_action = QtWidgets.QAction("Watchlist", self)
+        self.open_watchlist_action.triggered.connect(self.show_watchlist_window)
+        self.navigation_menu.addAction(self.open_watchlist_action)
                
     def show_main_window(self):
         """ Ana sayfaya geçiş yap """
-        self.menuBar().setVisible(True)
+        self.menu_bar.setVisible(True)
         self.stack.setCurrentIndex(1)
         
         
     def show_watchlist_window(self):
-        """Watchlist"""
-        self.menuBar().setVisible(True)
+        """ Watchlist sayfasina geçiş yap """
+        self.menu_bar.setVisible(True)
         self.stack.setCurrentIndex(2)
         self.watchlist_window.load_watchlist()  #refresh
 
