@@ -155,7 +155,10 @@ class MainWindow(QtWidgets.QMainWindow):
         except ValueError:
             rating = 0.0  # Default to 0.0 if conversion fails
 
-        genre_ids = [int(num.strip()) for num in genres_string.split(",")]
+        if genres_string:
+            genre_ids = [int(num.strip()) for num in genres_string.split(",") if num.strip().isdigit()]#in case of genres_string being empty or None
+        else:
+            genre_ids = []
         genres = []
         for genre_id in genre_ids:
             genres.append(self.db.genre_dict[genre_id])
