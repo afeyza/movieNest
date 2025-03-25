@@ -130,6 +130,11 @@ class Database:
             print(f"⚠️ Veritabanı hatası: {err}")
             traceback.print_exc()
             return False
+        
+        except Exception as e:  # catch other errors
+            print(f"⚠️ Beklenmeyen hata: {e}")
+            traceback.print_exc()
+            return False
 
     def close_connection(self):
         """ Uygulama kapanırken bağlantıyı temizle """
