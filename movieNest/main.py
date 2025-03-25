@@ -3,7 +3,7 @@
 import sys
 from PyQt5 import QtWidgets
 from ui_login_page import LoginPage
-from ui_main_window import UiMainWindow
+from ui_main_window import MainWindow
 
 class MainApp(QtWidgets.QMainWindow):
     def __init__(self):
@@ -14,9 +14,8 @@ class MainApp(QtWidgets.QMainWindow):
 
         # Initialize pages
         self.login_page = LoginPage()
-        self.main_window = QtWidgets.QMainWindow()
-        self.ui_main = UiMainWindow()
-        self.ui_main.setupUi(self.main_window)
+        self.main_window = MainWindow()
+
 
         # Add pages to QStackedWidget
         self.stack.addWidget(self.login_page)  # Page 0 → login

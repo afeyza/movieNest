@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import movie_database 
 
-USER_ID = 3  # Gonna change?
+USER_ID = 1  # Gonna change?
 
 class WatchlistWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -181,7 +181,7 @@ class WatchlistWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         )
         if confirm == QtWidgets.QMessageBox.Yes:
-            self.remove_from_watchlist(movie_id, card)
+            self.remove_from_watchlist(movie_id)
 
     def sort_watchlist(self):
         current = self.sort_box.currentText()
